@@ -1,0 +1,57 @@
+version: '3.6'
+
+services:
+  srvdb:
+    image: postgres
+    container_name: srvdb
+    hostname: srvdb
+    environment:
+      POSTGRES_USER: consultas
+      POSTGRES_DB: consultas
+      POSTGRES_PASSWORD: QueryConSql.pwd
+    ports:
+      - 5432:5432
+    networks:
+      - demo_kcs_net
+    restart: always
+
+  srvwildfly:
+    image: myapp
+    container_name: srvwildfly
+    hostname: srvwildfly
+    ports:
+      - 8080:8080
+      - 9990:9990
+    depends_on:
+      - srvdb
+    networks:
+      - demo_kcs_net
+    restart: always
+  
+  pgadmin:
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: info@jtux.ec
+      PGADMIN_DEFAULT_PASSWORD: clave
+    ports:
+      - 5050:80
+    depends_on:
+      - srvdb
+    networks:
+      - demo_kcs_net
+  
+  api-layer:
+    image: httpd
+    container_name: api-layer
+    hostname: api-layer
+    ports:
+      - 8081:80
+    volumes:
+      - ./httpd.conf:/usr/local/apache2/conf/httpd.conf
+    depends_on:
+      - srvwildfly
+    networks:
+      - demo_kcs_net
+
+networks:
+  demo_kcs_net:
